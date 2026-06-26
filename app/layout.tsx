@@ -20,8 +20,8 @@ export const viewport: Viewport = {
   themeColor: "#6d28d9",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Pinch-zoom left enabled for low-vision accessibility (Lighthouse a11y).
+  // Games already block accidental zoom via touch-action on their own surfaces.
 };
 
 export default function RootLayout({
