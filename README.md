@@ -1,6 +1,6 @@
 # 🎮 Kids Edu Arcade
 
-Ten fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
+Fifteen fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
 
 🔗 **Live:** https://kids-edu-arcade.vercel.app
 
@@ -18,6 +18,11 @@ Ten fast, fun, **ad-free** learning games for kids under 12. No sign-up, no trac
 | 🕐 **Clock Quest** | Time | Read an analog clock and pick the matching time. Telling time. |
 | 🚀 **Typing Rocket** | Typing | Tap the on-screen letters in order to launch the rocket. Letter recognition. |
 | 🎨 **Color Mix** | Colors | Mix two paints to match the target colour. Colour theory. |
+| 📖 **Hijaiyah** | Arabic | Tap the Arabic letter that matches its name. Hijaiyah alphabet. |
+| 🖍️ **Color Book** | Art | Pick a colour and fill the picture; finish it to unlock the next. Creativity. |
+| 🎹 **Tap Tunes** | Music | Tap the falling tiles in time to play the tune. Rhythm & timing. |
+| 🔢 **Count It** | Counting | Count the things and tap the right number. Early number sense. |
+| 🌍 **Flag Dash** | Geography | See the flag, pick the country. World knowledge. |
 
 ## Why it's different
 

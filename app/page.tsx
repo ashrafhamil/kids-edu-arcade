@@ -71,7 +71,7 @@ export default function Home() {
         </div>
 
         <footer className="mt-8 text-center text-sm font-semibold text-white/70">
-          <p>{GAMES.length} games · Math · Coding · Memory · Spelling · Focus · Money · Shapes · Time · Typing · Colors</p>
+          <p>{GAMES.length} games · Math · Coding · Memory · Spelling · Focus · Money · Shapes · Time · Typing · Colors · Arabic · Art · Music · Counting · Geography</p>
           <p className="mt-1 text-xs text-white/50">
             No sign-up · No tracking · Works offline after first load
           </p>
