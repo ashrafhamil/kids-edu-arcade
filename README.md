@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎮 Kids Edu Arcade
 
-## Getting Started
+Five fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
 
-First, run the development server:
+🔗 **Live:** _deployed on Vercel_
+
+## The games
+
+| Game | Subject | What it teaches |
+|------|---------|-----------------|
+| 🫧 **Math Pop** | Math | Pop the bubble with the right answer. Combos, hearts, escalating arithmetic. |
+| 🤖 **Robot Run** | Coding | Snap arrow blocks into a program to drive the robot to the star. Sequencing & planning. |
+| 🐾 **Critter Match** | Memory | Flip cards and match animal pairs against the clock. Concentration. |
+| 🔤 **Word Drop** | Spelling | Catch falling letters in order to spell the word. Reading & spelling. |
+| 🎵 **Echo** | Focus | Watch, listen, repeat the growing color-and-sound pattern. Attention & memory. |
+
+## Why it's different
+
+- **Zero ads. Zero monetization. Zero tracking.** Nothing pops up, nothing asks for money.
+- **Addictive the good way** — instant juicy feedback, combo streaks, stars, and difficulty that ramps just fast enough to keep kids saying "one more round."
+- **Works offline** after the first load, on any phone or tablet.
+- **No accounts** — progress and high scores live in the browser (localStorage).
+- **No assets to license** — every graphic is an emoji and every sound is synthesized in the browser with the Web Audio API.
+
+## Tech
+
+- [Next.js 16](https://nextjs.org) (App Router) · React 19 · TypeScript (strict)
+- Tailwind CSS v4
+- Web Audio API for all sound · `localStorage` for high scores
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  page.tsx              # home hub — game cards with best scores & stars
+  games/
+    registry.ts         # single source of truth for all 5 games
+    <slug>/page.tsx     # server wrapper (metadata)
+    <slug>/Game.tsx     # the game (client component)
+components/
+  GameShell.tsx         # shared frame: gradient, back button, mute, stats
+  Confetti.tsx          # CSS confetti burst
+  ui.tsx                # buttons, stars, panels
+lib/
+  sound.ts              # synthesized sound effects
+  storage.ts            # localStorage high scores & progress
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Made for kids. No ads, ever.
