@@ -2,7 +2,8 @@
 
 Five fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
 
-🔗 **Live:** _deployed on Vercel_
+🔗 **Live:** https://kids-edu-arcade-h50kychhn-ashrafhamils-projects.vercel.app
+_(deployed on Vercel — disable Deployment Protection in project settings to make it public)_
 
 ## The games
 
