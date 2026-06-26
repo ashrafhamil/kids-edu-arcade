@@ -9,7 +9,7 @@ import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import TimerBar from "./TimerBar";
 import { genQuestion, durationFor, starsFor, type Question } from "./questions";
-import type { Country } from "./data";
+import { COUNTRIES, type Country } from "./data";
 
 const SLUG = "flag-dash";
 const START_HEARTS = 3;
@@ -50,6 +50,17 @@ export default function Game() {
   const nextId = useRef(1);
   const timers = useRef<number[]>([]);
   const roundStart = useRef(0);
+  // Flags already shown this run — a flag won't reappear until all have been seen.
+  const usedNames = useRef<string[]>([]);
+
+  // Build the next question, drawing the flag from the not-yet-seen pool and
+  // starting a fresh cycle once every flag has been shown.
+  function makeQuestion(forCorrectCount: number, avoidName?: string): Question {
+    if (usedNames.current.length >= COUNTRIES.length) usedNames.current = [];
+    const q = genQuestion(forCorrectCount, nextId.current++, usedNames.current, avoidName);
+    usedNames.current.push(q.answer.name);
+    return q;
+  }
 
   // Load the persisted best after mount (SSR-safe) so the server and first
   // client render agree, then update once localStorage is available.
@@ -80,7 +91,7 @@ export default function Game() {
   }
 
   function loadNext(forCorrectCount: number, avoidName?: string): void {
-    setQuestion(genQuestion(forCorrectCount, nextId.current++, avoidName));
+    setQuestion(makeQuestion(forCorrectCount, avoidName));
     setWrongIndex(null);
     setRevealAnswer(false);
     setShaking(false);
@@ -102,7 +113,8 @@ export default function Game() {
     setShaking(false);
     setFloatGain(0);
     roundStart.current = Date.now();
-    setQuestion(genQuestion(0, nextId.current++));
+    usedNames.current = [];
+    setQuestion(makeQuestion(0));
     setRoundState("active");
     setPhase("playing");
   }

@@ -54,10 +54,23 @@ function shuffle<T>(items: T[]): T[] {
 
 /**
  * Build a question: one correct country plus three distinct distractors, all
- * shuffled. `avoidName` keeps the same flag from appearing twice in a row.
+ * shuffled. The answer is drawn only from flags NOT in `usedNames`, so a flag
+ * never reappears until every flag has been shown. `avoidName` additionally
+ * prevents an immediate repeat across a cycle boundary (when the used set was
+ * just reset). Distractors may still repeat — only the shown flag is unique.
  */
-export function genQuestion(correctCount: number, id: number, avoidName?: string): Question {
-  const eligible = avoidName ? COUNTRIES.filter((c) => c.name !== avoidName) : COUNTRIES;
+export function genQuestion(
+  correctCount: number,
+  id: number,
+  usedNames: readonly string[] = [],
+  avoidName?: string,
+): Question {
+  const used = new Set(usedNames);
+  let eligible = COUNTRIES.filter((c) => !used.has(c.name) && c.name !== avoidName);
+  // Fallbacks keep the game playable if the caller hasn't reset the cycle yet
+  // (or the pool is tiny): drop the used filter, then the avoid filter.
+  if (eligible.length === 0) eligible = COUNTRIES.filter((c) => c.name !== avoidName);
+  if (eligible.length === 0) eligible = [...COUNTRIES];
   const answer = pick(eligible);
   const distractors = shuffle(COUNTRIES.filter((c) => c.name !== answer.name)).slice(
     0,
