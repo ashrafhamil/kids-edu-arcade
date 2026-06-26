@@ -1,9 +1,8 @@
 # 🎮 Kids Edu Arcade
 
-Five fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
+Ten fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
 
-🔗 **Live:** https://kids-edu-arcade-h50kychhn-ashrafhamils-projects.vercel.app
-_(deployed on Vercel — disable Deployment Protection in project settings to make it public)_
+🔗 **Live:** https://kids-edu-arcade.vercel.app
 
 ## The games
 
@@ -14,6 +13,11 @@ _(deployed on Vercel — disable Deployment Protection in project settings to ma
 | 🐾 **Critter Match** | Memory | Flip cards and match animal pairs against the clock. Concentration. |
 | 🔤 **Word Drop** | Spelling | Catch falling letters in order to spell the word. Reading & spelling. |
 | 🎵 **Echo** | Focus | Watch, listen, repeat the growing color-and-sound pattern. Attention & memory. |
+| 🪙 **Coin Count** | Money | Tap coins to add up to the price. Addition & money sense. |
+| 🔺 **Shape Sort** | Shapes | Sort items into bins; the rule flips between shape and colour. Classification. |
+| 🕐 **Clock Quest** | Time | Read an analog clock and pick the matching time. Telling time. |
+| 🚀 **Typing Rocket** | Typing | Tap the on-screen letters in order to launch the rocket. Letter recognition. |
+| 🎨 **Color Mix** | Colors | Mix two paints to match the target colour. Colour theory. |
 
 ## Why it's different
 
