@@ -291,10 +291,10 @@ export default function Game() {
   const handleLaneTap = (lane: number) => {
     if (phaseRef.current !== "playing") return;
 
-    const bandBottom = heightRef.current - BOTTOM_MARGIN;
-    const bandTop = bandBottom - HITZONE_H;
-
-    // the lowest in-band tile in this lane is the one to perform
+    // Kid-friendly: tapping anywhere in a lane performs the LOWEST visible tile
+    // in it (closest to the floor), so a tap on a tile always plays its note —
+    // like real Piano Tiles. Tiles are only "missed" if they reach the floor
+    // untapped (handled in the falling loop). An empty lane is a quiet whiff.
     let target: Tile | null = null;
     let targetY = 0;
     let lowest = -Infinity;
@@ -302,7 +302,7 @@ export default function Game() {
       if (t.lane !== lane) continue;
       const y = yRef.current.get(t.id) ?? START_Y;
       const center = y + TILE_H / 2;
-      if (center >= bandTop && center <= bandBottom && center > lowest) {
+      if (center >= 0 && center > lowest) {
         lowest = center;
         target = t;
         targetY = y;
