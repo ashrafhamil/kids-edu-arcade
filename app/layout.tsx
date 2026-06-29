@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fredoka } from "next/font/google";
 import "./globals.css";
 import PwaInit from "@/components/PwaInit";
+import InstallBanner from "@/components/InstallBanner";
 
 const fredoka = Fredoka({
   variable: "--font-fredoka",
@@ -49,6 +50,7 @@ export default function RootLayout({
     <html lang="en" className={`${fredoka.variable} h-full`}>
       <body className="min-h-full antialiased">
         <PwaInit />
+        <InstallBanner />
         {children}
       </body>
     </html>
