@@ -14,6 +14,23 @@ export const metadata: Metadata = {
     "Five fast, fun learning games for kids under 12. Math, coding, memory, spelling and focus. No ads, no sign-up, no tracking.",
   applicationName: "Kids Edu Arcade",
   appleWebApp: { capable: true, title: "Edu Arcade", statusBarStyle: "black-translucent" },
+  metadataBase: new URL("https://kids-edu-arcade.vercel.app"),
+  openGraph: {
+    title: "Kids Edu Arcade — Learn & Play, No Ads",
+    description:
+      "Five fast, fun learning games for kids under 12. Math, coding, memory, spelling and focus. No ads, no sign-up, no tracking.",
+    url: "https://kids-edu-arcade.vercel.app",
+    siteName: "Kids Edu Arcade",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Kids Edu Arcade" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kids Edu Arcade — Learn & Play, No Ads",
+    description:
+      "Five fast, fun learning games for kids under 12. Math, coding, memory, spelling and focus. No ads, no sign-up, no tracking.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export const viewport: Viewport = {
