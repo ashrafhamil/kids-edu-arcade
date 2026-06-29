@@ -11,13 +11,10 @@ export default function InstallBanner() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIos, setIsIos] = useState(false);
   const [showIosHint, setShowIosHint] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [minimised, setMinimised] = useState(false);
 
   useEffect(() => {
-    // Already installed as standalone — don't show
     if (window.matchMedia("(display-mode: standalone)").matches) return;
-    // Already dismissed this session
-    if (sessionStorage.getItem("pwa-banner-dismissed")) return;
 
     const ios =
       /iphone|ipad|ipod/i.test(navigator.userAgent) &&
@@ -40,13 +37,18 @@ export default function InstallBanner() {
     if (outcome === "accepted") setPrompt(null);
   };
 
-  const handleDismiss = () => {
-    sessionStorage.setItem("pwa-banner-dismissed", "1");
-    setDismissed(true);
-    setShowIosHint(false);
-  };
-
-  if (dismissed) return null;
+  // Minimised: small floating pill bottom-right, always tappable
+  if (minimised) {
+    return (
+      <button
+        onClick={() => { setMinimised(false); setShowIosHint(false); }}
+        className="fixed bottom-5 right-4 z-50 flex items-center gap-1.5 rounded-full bg-violet-800 px-3 py-2 shadow-2xl text-white text-sm font-bold active:scale-95 transition border border-violet-600"
+        aria-label="Install app"
+      >
+        📲 Install
+      </button>
+    );
+  }
 
   // Android: native install prompt available
   if (prompt) {
@@ -67,8 +69,8 @@ export default function InstallBanner() {
             Install
           </button>
           <button
-            onClick={handleDismiss}
-            aria-label="Dismiss"
+            onClick={() => setMinimised(true)}
+            aria-label="Minimise"
             className="text-white/50 hover:text-white text-xl leading-none px-1"
           >
             ×
@@ -85,7 +87,7 @@ export default function InstallBanner() {
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-violet-900/95 px-4 py-4 backdrop-blur-sm shadow-2xl border-t border-violet-700">
           <div className="flex justify-between items-start mb-2">
             <p className="text-sm font-bold text-white">Add to Home Screen</p>
-            <button onClick={handleDismiss} className="text-white/50 hover:text-white text-xl leading-none">×</button>
+            <button onClick={() => setMinimised(true)} className="text-white/50 hover:text-white text-xl leading-none">×</button>
           </div>
           <ol className="text-xs text-white/80 space-y-1 list-decimal list-inside">
             <li>Tap the <strong className="text-white">Share</strong> button <span className="text-base">⬆️</span> at the bottom</li>
@@ -116,8 +118,8 @@ export default function InstallBanner() {
             How?
           </button>
           <button
-            onClick={handleDismiss}
-            aria-label="Dismiss"
+            onClick={() => setMinimised(true)}
+            aria-label="Minimise"
             className="text-white/50 hover:text-white text-xl leading-none px-1"
           >
             ×
