@@ -39,11 +39,63 @@ function note(name: string): Note {
   return { name, freq: FREQ[name], color: COLOR[name].color, text: COLOR[name].text };
 }
 
-// "Twinkle Twinkle Little Star" — one full verse, looped by the game.
-const TWINKLE =
-  "C C G G A A G F F E E D D C G G F F E E D G G F F E E D C C G G A A G F F E E D D C";
+/** A playable tune: a friendly title, an emoji, and the note sequence (looped). */
+export type Song = {
+  id: string;
+  title: string;
+  emoji: string;
+  notes: Note[];
+};
 
-export const MELODY: Note[] = TWINKLE.split(" ").map(note);
+// Each tune is written in C major within the C–B palette above (no sharps/flats,
+// single octave) so every pitch already has a colour and plays via sfx.note().
+// The game loops whichever song is picked, exactly as before.
+const SCORES: { id: string; title: string; emoji: string; pitches: string }[] = [
+  {
+    id: "twinkle",
+    title: "Twinkle Twinkle",
+    emoji: "⭐",
+    pitches:
+      "C C G G A A G F F E E D D C G G F F E E D G G F F E E D C C G G A A G F F E E D D C",
+  },
+  {
+    id: "mary",
+    title: "Mary Had a Little Lamb",
+    emoji: "🐑",
+    pitches: "E D C D E E E D D D E G G E D C D E E E E D D E D C",
+  },
+  {
+    id: "row",
+    title: "Row Your Boat",
+    emoji: "🚣",
+    pitches: "C C C D E E D E F G C C C G G G E E E C C C G F E D C",
+  },
+  {
+    id: "hotcross",
+    title: "Hot Cross Buns",
+    emoji: "🥐",
+    pitches: "E D C E D C C C C C D D D D E D C",
+  },
+  {
+    id: "macdonald",
+    title: "Old MacDonald",
+    emoji: "🐮",
+    pitches: "C C C G A A G E E D D C",
+  },
+  {
+    id: "london",
+    title: "London Bridge",
+    emoji: "🌉",
+    pitches: "G A G F E F G D E F E F G G A G F E F G D G E C",
+  },
+];
+
+export const SONGS: Song[] = SCORES.map((s) => ({
+  id: s.id,
+  title: s.title,
+  emoji: s.emoji,
+  notes: s.pitches.split(" ").map(note),
+}));
 
 /** Fall speed (px/sec) climbs gently with score, then caps so it stays catchable. */
 export function speedFor(score: number): number {

@@ -7,7 +7,7 @@ import Confetti from "@/components/Confetti";
 import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
-import { MELODY, speedFor, starsFor, type Note } from "./melodies";
+import { SONGS, speedFor, starsFor, type Note, type Song } from "./melodies";
 
 const SLUG = "tap-tunes";
 const meta = getGame(SLUG);
@@ -52,6 +52,7 @@ export default function Game() {
   const [shaking, setShaking] = useState(false);
   const [newBest, setNewBest] = useState(false);
   const [burst, setBurst] = useState(0);
+  const [song, setSong] = useState<Song>(SONGS[0]);
 
   // --- engine state (refs avoid per-frame re-renders / stale closures) ---
   const tilesRef = useRef<Tile[]>([]);
@@ -67,6 +68,7 @@ export default function Game() {
 
   const tileIdRef = useRef(1);
   const melodyIdxRef = useRef(0);
+  const songRef = useRef<Song>(SONGS[0]);
   const lastLaneRef = useRef(-1);
   const spawnAccRef = useRef(0);
 
@@ -161,7 +163,8 @@ export default function Game() {
   /* ---- spawning (driven by the rAF accumulator, not setInterval) ---- */
 
   const spawnTile = useCallback(() => {
-    const note = MELODY[melodyIdxRef.current % MELODY.length];
+    const notes = songRef.current.notes;
+    const note = notes[melodyIdxRef.current % notes.length];
     melodyIdxRef.current += 1;
 
     let lane = Math.floor(Math.random() * LANES);
@@ -318,8 +321,10 @@ export default function Game() {
 
   /* ---- round control ---- */
 
-  const startGame = () => {
+  const startGame = (chosen: Song = song) => {
     sfx.click();
+    songRef.current = chosen;
+    setSong(chosen);
     tilesRef.current = [];
     yRef.current.clear();
     elRef.current.clear();
@@ -370,12 +375,16 @@ export default function Game() {
       <div className="w-full max-w-sm select-none">
         {phase === "playing" && (
           <div className="mb-2 flex min-h-[2rem] items-center justify-center">
-            {combo >= 2 && (
+            {combo >= 2 ? (
               <div
                 key={combo}
                 className="animate-pop-in rounded-full bg-amber-300 px-4 py-1 text-base font-black text-amber-950 shadow-md"
               >
                 🔥 Combo x{Math.min(combo, MAX_MULTIPLIER)}
+              </div>
+            ) : (
+              <div className="rounded-full bg-white/20 px-4 py-1 text-sm font-bold text-white">
+                {song.emoji} {song.title}
               </div>
             )}
           </div>
@@ -486,21 +495,31 @@ export default function Game() {
           {phase === "ready" && (
             <CenterOverlay>
               <Panel>
-                <div className="mb-1 text-6xl animate-bob" aria-hidden>
+                <div className="mb-1 text-5xl animate-bob" aria-hidden>
                   🎹
                 </div>
                 <h2 className="text-2xl font-black text-slate-800">Tap Tunes</h2>
-                <p className="mt-2 text-base font-semibold text-slate-600">
-                  Tap each falling tile when it reaches the glowing line to play{" "}
-                  <span className="font-black text-violet-600">Twinkle Twinkle</span>! Don&apos;t
-                  let a tile slip past.
+                <p className="mt-1 text-sm font-semibold text-slate-600">
+                  Tap each falling tile on the glowing line to play the song. Pick a tune!
                 </p>
-                <p className="mt-3 text-sm font-bold text-slate-500">
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {SONGS.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => startGame(s)}
+                      className="flex flex-col items-center gap-1 rounded-2xl bg-violet-100 px-2 py-3 text-center font-black text-violet-900 shadow-sm transition active:scale-95 hover:bg-violet-200"
+                    >
+                      <span className="text-3xl" aria-hidden>
+                        {s.emoji}
+                      </span>
+                      <span className="text-sm leading-tight">{s.title}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs font-bold text-slate-500">
                   ❤️❤️❤️ 3 hearts &middot; ⭐ at 80 / 200 / 400 pts
                 </p>
-                <div className="mt-4 flex justify-center">
-                  <BigButton onClick={startGame}>▶ Play</BigButton>
-                </div>
               </Panel>
             </CenterOverlay>
           )}
@@ -526,9 +545,22 @@ export default function Game() {
                 <div className="mt-3 flex justify-center">
                   <StarRow value={starsFor(score)} />
                 </div>
-                <div className="mt-2 text-sm font-semibold text-slate-500">Best {best}</div>
-                <div className="mt-5 flex justify-center">
-                  <BigButton onClick={startGame}>🔁 Play Again</BigButton>
+                <div className="mt-2 text-sm font-semibold text-slate-500">
+                  Best {best} &middot; {song.emoji} {song.title}
+                </div>
+                <div className="mt-5 flex flex-col items-center gap-2">
+                  <BigButton onClick={() => startGame()}>🔁 Play Again</BigButton>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.click();
+                      phaseRef.current = "ready";
+                      setPhase("ready");
+                    }}
+                    className="rounded-2xl px-5 py-2 text-base font-black text-violet-600 transition active:scale-95 hover:bg-violet-50"
+                  >
+                    🎵 Choose Song
+                  </button>
                 </div>
               </Panel>
             </CenterOverlay>
@@ -540,7 +572,12 @@ export default function Game() {
 }
 
 function CenterOverlay({ children }: { children: React.ReactNode }) {
+  // items-start + my-auto: perfectly centered when the panel fits, but scrollable
+  // from the top when it's taller than the playfield (e.g. the song picker on a
+  // short screen), so no control is ever clipped by the overflow-hidden field.
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center p-3">{children}</div>
+    <div className="absolute inset-0 z-50 flex items-start justify-center overflow-y-auto p-3">
+      <div className="my-auto flex w-full justify-center">{children}</div>
+    </div>
   );
 }
