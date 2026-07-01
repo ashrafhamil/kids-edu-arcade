@@ -22,6 +22,11 @@ const NAV_ROUTES = [
   "/games/habitat-hop",
   "/games/rhyme-time",
   "/games/maze-dash",
+  "/games/big-number",
+  "/games/odd-one-out",
+  "/games/opposites",
+  "/games/quick-tap",
+  "/games/shadow-match",
 ];
 
 self.addEventListener("install", (event) => {
