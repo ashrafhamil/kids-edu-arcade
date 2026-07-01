@@ -1,6 +1,6 @@
 # 🎮 Kids Edu Arcade
 
-Fifteen fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
+Thirty fast, fun, **ad-free** learning games for kids under 12. No sign-up, no tracking, no in-app purchases — just play and learn. Built because kids' games shouldn't be interrupted by ads every two rounds.
 
 🔗 **Live:** https://kids-edu-arcade.vercel.app
 
@@ -23,6 +23,21 @@ Fifteen fast, fun, **ad-free** learning games for kids under 12. No sign-up, no 
 | 🎹 **Tap Tunes** | Music | Tap the falling tiles in time to play the tune. Rhythm & timing. |
 | 🔢 **Count It** | Counting | Count the things and tap the right number. Early number sense. |
 | 🌍 **Flag Dash** | Geography | See the flag, pick the country. World knowledge. |
+| 🧮 **Times Tiles** | Multiply | Pop the tile with the answer to the times-table question. Multiplication. |
+| 🧩 **Pattern Party** | Patterns | Tap the piece that finishes the pattern. Sequencing & logic. |
+| 🦁 **Habitat Hop** | Science | Sort each animal into Land, Sea or Sky. Animal habitats. |
+| 🎤 **Rhyme Time** | Phonics | Find the word that rhymes. Sound awareness. |
+| 🧭 **Maze Dash** | Mazes | Steer through the maze to reach the star. Spatial reasoning. |
+| 🐘 **Big Number** | Compare | Tap the bigger of two numbers. Number sense. |
+| 🔍 **Odd One Out** | Logic | Spot the tile that doesn't belong. Classification & logic. |
+| ↔️ **Opposites** | Words | Tap the word that means the opposite. Vocabulary. |
+| ⚡ **Quick Tap** | Reflex | Tap the glowing targets, dodge the bombs. Reaction time. |
+| 🕵️ **Shadow Match** | Visual | Guess the emoji from its shadow. Visual recognition. |
+| 🌦️ **Weather Watch** | Weather | Tap the weather that matches the scene. Weather awareness. |
+| 🧍 **Body Bop** | Anatomy | Tap the body part that matches the name. Anatomy basics. |
+| 🔡 **ABC Order** | Alphabet | Tap shuffled letters in alphabetical order. Alphabet sequencing. |
+| 🍕 **Fraction Feast** | Fractions | Tap the fraction that matches the shaded pizza. Fractions. |
+| 🎭 **Feelings** | Emotions | Tap the word that names the face's feeling. Emotional literacy. |
 
 ## Why it's different
 
@@ -53,7 +68,7 @@ Open [http://localhost:3000](http://localhost:3000).
 app/
   page.tsx              # home hub — game cards with best scores & stars
   games/
-    registry.ts         # single source of truth for all 5 games
+    registry.ts         # single source of truth for all games
     <slug>/page.tsx     # server wrapper (metadata)
     <slug>/Game.tsx     # the game (client component)
 components/

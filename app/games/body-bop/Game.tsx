@@ -1,0 +1,319 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import GameShell, { StatBadge } from "@/components/GameShell";
+import { BigButton, StarRow, Panel, FloatScore } from "@/components/ui";
+import Confetti from "@/components/Confetti";
+import { sfx } from "@/lib/sound";
+import { getBest, recordBest, setStars } from "@/lib/storage";
+import { getGame } from "@/app/games/registry";
+import { genRound, starsFor, choiceCountFor, type Round } from "./rounds";
+
+const SLUG = "body-bop";
+const START_HEARTS = 3;
+const BASE_POINTS = 10;
+const MAX_MULTIPLIER = 5;
+const COMBO_SOUND_EVERY = 4;
+
+const CORRECT_DELAY = 480;
+const WRONG_DELAY = 1000;
+const OVER_DELAY = 700;
+
+type Phase = "ready" | "playing" | "over";
+type ChoiceVisual = "idle" | "correct" | "wrong";
+
+const meta = getGame(SLUG);
+
+export default function Game() {
+  const [phase, setPhase] = useState<Phase>("ready");
+  const [round, setRound] = useState<Round | null>(null);
+
+  const [score, setScore] = useState(0);
+  const [best, setBest] = useState(0);
+  const [hearts, setHearts] = useState(START_HEARTS);
+  const [combo, setCombo] = useState(0);
+
+  const [wrongName, setWrongName] = useState<string | null>(null);
+  const [revealAnswer, setRevealAnswer] = useState(false);
+
+  const [floatGain, setFloatGain] = useState(0);
+  const [floatKey, setFloatKey] = useState(0);
+  const [burst, setBurst] = useState(0);
+  const [newBest, setNewBest] = useState(false);
+
+  const nextId = useRef(1);
+  const timers = useRef<number[]>([]);
+  const resolving = useRef(false);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setBest(getBest(SLUG)), 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      timers.current.forEach((t) => window.clearTimeout(t));
+      timers.current = [];
+    };
+  }, []);
+
+  function schedule(fn: () => void, ms: number): void {
+    const id = window.setTimeout(() => {
+      timers.current = timers.current.filter((t) => t !== id);
+      fn();
+    }, ms);
+    timers.current.push(id);
+  }
+
+  function clearTimers(): void {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+  }
+
+  function present(next: Round): void {
+    setRound(next);
+    setWrongName(null);
+    setRevealAnswer(false);
+    setFloatGain(0);
+    resolving.current = false;
+  }
+
+  function loadNext(forScore: number, avoidName: string): void {
+    present(genRound(nextId.current++, forScore, avoidName));
+  }
+
+  function startGame(): void {
+    clearTimers();
+    sfx.click();
+    setScore(0);
+    setHearts(START_HEARTS);
+    setCombo(0);
+    setNewBest(false);
+    present(genRound(nextId.current++, 0));
+    setPhase("playing");
+  }
+
+  function endGame(finalScore: number): void {
+    setPhase("over");
+    const isBest = recordBest(SLUG, finalScore);
+    setNewBest(isBest);
+    setStars(SLUG, starsFor(finalScore));
+    if (isBest) {
+      setBest(finalScore);
+      setBurst((b) => b + 1);
+      sfx.win();
+    } else {
+      sfx.gameOver();
+    }
+  }
+
+  function registerMiss(currentScore: number, choiceName: string, prevAnswer: string): void {
+    sfx.wrong();
+    setCombo(0);
+    setWrongName(choiceName);
+    setRevealAnswer(true);
+    const remaining = hearts - 1;
+    setHearts(remaining);
+    if (remaining <= 0) {
+      schedule(() => endGame(currentScore), OVER_DELAY);
+    } else {
+      schedule(() => loadNext(currentScore, prevAnswer), WRONG_DELAY);
+    }
+  }
+
+  function handleChoice(choiceName: string): void {
+    if (phase !== "playing" || !round || resolving.current) return;
+    resolving.current = true;
+
+    if (choiceName !== round.correct.name) {
+      registerMiss(score, choiceName, round.correct.name);
+      return;
+    }
+
+    sfx.pop();
+    sfx.correct();
+    const nextCombo = combo + 1;
+    if (nextCombo % COMBO_SOUND_EVERY === 0) sfx.combo(nextCombo);
+    const points = BASE_POINTS * Math.min(nextCombo, MAX_MULTIPLIER);
+    const nextScore = score + points;
+    if (choiceCountFor(nextScore) > choiceCountFor(score)) sfx.levelUp();
+
+    setCombo(nextCombo);
+    setScore(nextScore);
+    setRevealAnswer(true);
+    setFloatGain(points);
+    setFloatKey((k) => k + 1);
+    schedule(() => loadNext(nextScore, round.correct.name), CORRECT_DELAY);
+  }
+
+  function choiceVisual(name: string): ChoiceVisual {
+    if (revealAnswer && round && name === round.correct.name) return "correct";
+    if (wrongName === name) return "wrong";
+    return "idle";
+  }
+
+  const heartsDisplay =
+    "❤️".repeat(Math.max(0, hearts)) + "🤍".repeat(Math.max(0, START_HEARTS - hearts));
+
+  const liveStats = (
+    <>
+      <StatBadge label="Score" value={score} />
+      <StatBadge label="Best" value={best} />
+      <StatBadge
+        label="Hearts"
+        value={<span className="text-xl leading-none">{heartsDisplay}</span>}
+      />
+    </>
+  );
+
+  return (
+    <GameShell meta={meta} right={liveStats}>
+      <Confetti fire={burst} count={28} />
+
+      {phase === "ready" && <ReadyPanel onPlay={startGame} />}
+
+      {phase === "over" && (
+        <OverPanel score={score} best={best} newBest={newBest} onPlay={startGame} />
+      )}
+
+      {phase === "playing" && round && (
+        <div className="flex w-full flex-col items-center gap-4">
+          <div className="flex min-h-[2.25rem] items-center justify-center">
+            {combo >= 2 && (
+              <div
+                key={combo}
+                className="animate-pop-in rounded-full bg-amber-300 px-4 py-1 text-base font-black text-amber-950 shadow-md"
+              >
+                🔥 Combo x{Math.min(combo, MAX_MULTIPLIER)}
+              </div>
+            )}
+          </div>
+
+          <div className="text-center text-xl font-bold text-white/85">Tap the</div>
+          <div
+            key={round.id}
+            className="animate-pop-in rounded-3xl bg-white/95 px-10 py-5 text-center text-4xl font-black tracking-tight text-slate-900 shadow-2xl shadow-black/30"
+          >
+            {round.correct.name}
+          </div>
+
+          <div className="relative flex w-full max-w-sm flex-wrap items-stretch justify-center gap-3">
+            {round.choices.map((choice, index) => (
+              <div
+                key={`${round.id}-${choice.name}`}
+                className="relative animate-pop-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <ChoiceTile
+                  name={choice.name}
+                  emoji={choice.emoji}
+                  visual={choiceVisual(choice.name)}
+                  disabled={revealAnswer}
+                  onTap={() => handleChoice(choice.name)}
+                />
+                {floatGain > 0 && round.correct.name === choice.name && (
+                  <span
+                    key={floatKey}
+                    className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2"
+                  >
+                    <FloatScore>+{floatGain}</FloatScore>
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </GameShell>
+  );
+}
+
+function ChoiceTile({
+  name,
+  emoji,
+  visual,
+  disabled,
+  onTap,
+}: {
+  name: string;
+  emoji: string;
+  visual: ChoiceVisual;
+  disabled: boolean;
+  onTap: () => void;
+}) {
+  const feedback =
+    visual === "correct"
+      ? "ring-4 ring-lime-400 scale-[1.04]"
+      : visual === "wrong"
+        ? "ring-4 ring-rose-400 opacity-80 animate-shake"
+        : "";
+
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      disabled={disabled}
+      aria-label={name}
+      className={`relative flex min-h-24 w-32 select-none flex-col items-center justify-center gap-1 rounded-2xl bg-white px-2 py-3 text-slate-900 shadow-lg shadow-black/20 transition active:scale-95 disabled:active:scale-100 ${feedback}`}
+    >
+      <span className="text-4xl leading-none" aria-hidden>
+        {emoji}
+      </span>
+      <span className="text-lg font-black tracking-tight">{name}</span>
+      {visual !== "idle" && (
+        <span className="absolute right-1 top-1 text-xl leading-none" aria-hidden>
+          {visual === "correct" ? "✅" : "❌"}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ReadyPanel({ onPlay }: { onPlay: () => void }) {
+  return (
+    <Panel>
+      <div className="text-6xl animate-bob">🧍</div>
+      <h2 className="mt-2 text-3xl font-black text-slate-800">Body Bop</h2>
+      <p className="mt-2 text-base font-semibold text-slate-600">
+        Read the body part name, then tap the matching tile before your hearts run out!
+      </p>
+      <p className="mt-3 text-sm font-bold text-slate-500">
+        ❤️❤️❤️ 3 hearts &middot; ⭐ at 80 / 200 / 400 pts
+      </p>
+      <div className="mt-5 flex justify-center">
+        <BigButton onClick={onPlay}>▶ Play</BigButton>
+      </div>
+    </Panel>
+  );
+}
+
+function OverPanel({
+  score,
+  best,
+  newBest,
+  onPlay,
+}: {
+  score: number;
+  best: number;
+  newBest: boolean;
+  onPlay: () => void;
+}) {
+  return (
+    <Panel>
+      <div className="text-5xl">{newBest ? "🏆" : "🧍"}</div>
+      {newBest && (
+        <div className="mt-1 animate-bob text-xl font-black text-amber-500">NEW BEST!</div>
+      )}
+      <h2 className="mt-1 text-2xl font-black text-slate-800">Game Over</h2>
+      <div className="mt-3 text-5xl font-black tabular-nums text-rose-600">{score}</div>
+      <div className="text-xs font-bold uppercase tracking-widest text-slate-400">points</div>
+      <div className="mt-3 flex justify-center">
+        <StarRow value={starsFor(score)} />
+      </div>
+      <div className="mt-2 text-sm font-semibold text-slate-500">Best {best}</div>
+      <div className="mt-5 flex justify-center">
+        <BigButton onClick={onPlay}>🔁 Play Again</BigButton>
+      </div>
+    </Panel>
+  );
+}

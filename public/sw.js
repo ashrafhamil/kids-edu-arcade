@@ -27,6 +27,11 @@ const NAV_ROUTES = [
   "/games/opposites",
   "/games/quick-tap",
   "/games/shadow-match",
+  "/games/weather-watch",
+  "/games/body-bop",
+  "/games/abc-order",
+  "/games/fraction-feast",
+  "/games/feelings",
 ];
 
 self.addEventListener("install", (event) => {
