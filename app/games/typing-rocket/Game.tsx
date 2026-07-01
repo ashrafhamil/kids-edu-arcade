@@ -225,7 +225,7 @@ export default function Game() {
 
   return (
     <GameShell meta={meta} right={liveStats}>
-      <Confetti fire={burst} />
+      <Confetti fire={burst} count={28} />
 
       {phase === "start" && <StartPanel onPlay={startGame} />}
 

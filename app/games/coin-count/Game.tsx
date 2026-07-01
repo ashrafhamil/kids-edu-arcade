@@ -276,7 +276,7 @@ export default function Game() {
             {statusMessage ? (
               <div
                 key={`${roundId}-${result}`}
-                className="animate-pop-in rounded-full bg-white/25 px-4 py-1 text-base font-black backdrop-blur"
+                className="animate-pop-in rounded-full bg-white/30 px-4 py-1 text-base font-black"
               >
                 {statusMessage}
               </div>
@@ -341,7 +341,7 @@ export default function Game() {
             {shownCoins.map((c, i) => (
               <span
                 key={`${roundId}-${hiddenCount + i}`}
-                className="animate-pop-in flex h-7 items-center gap-0.5 rounded-full bg-white/25 px-2 text-sm font-black backdrop-blur"
+                className="animate-pop-in flex h-7 items-center gap-0.5 rounded-full bg-white/25 px-2 text-sm font-black"
               >
                 🪙{c}
               </span>
@@ -421,7 +421,7 @@ function ActionButton({
       type="button"
       onClick={onTap}
       disabled={disabled}
-      className="h-12 flex-1 select-none rounded-2xl bg-white/20 text-base font-black text-white backdrop-blur transition active:scale-95 hover:bg-white/30 disabled:opacity-40 disabled:active:scale-100"
+      className="h-12 flex-1 select-none rounded-2xl bg-white/30 text-base font-black text-white transition active:scale-95 hover:bg-white/30 disabled:opacity-40 disabled:active:scale-100"
     >
       {label}
     </button>

@@ -354,14 +354,14 @@ function BinButton({
       ? "ring-4 ring-lime-300 bg-white/35 scale-[1.04]"
       : visual === "wrong"
         ? "ring-4 ring-rose-400 bg-rose-500/30 animate-shake"
-        : "bg-white/20 hover:bg-white/30";
+        : "bg-white/30 hover:bg-white/30";
 
   return (
     <button
       type="button"
       onClick={onTap}
       aria-label={`${label} habitat`}
-      className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-3xl px-2 py-3 backdrop-blur transition active:scale-95 ${feedback}`}
+      className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-3xl px-2 py-3 transition active:scale-95 ${feedback}`}
     >
       <span className="text-4xl leading-none" aria-hidden>
         {emoji}

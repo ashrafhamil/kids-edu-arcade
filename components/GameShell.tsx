@@ -35,7 +35,7 @@ export default function GameShell({
           <Link
             href="/"
             onClick={() => sfx.click()}
-            className="flex h-12 items-center gap-1.5 rounded-2xl bg-white/20 px-4 text-lg font-extrabold backdrop-blur transition active:scale-95 hover:bg-white/30"
+            className="flex h-12 items-center gap-1.5 rounded-2xl bg-white/30 px-4 text-lg font-extrabold transition active:scale-95 hover:bg-white/30"
             aria-label="Back to home"
           >
             <span className="text-2xl leading-none">←</span>
@@ -58,7 +58,7 @@ export default function GameShell({
               setMuted(m);
               if (!m) sfx.click();
             }}
-            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur transition active:scale-95 hover:bg-white/30"
+            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/30 text-2xl transition active:scale-95 hover:bg-white/30"
             aria-label={muted ? "Unmute" : "Mute"}
           >
             {muted ? "🔇" : "🔊"}
@@ -80,7 +80,7 @@ export default function GameShell({
 /** Live stat chip shown in the GameShell `right` slot. */
 export function StatBadge({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex min-w-20 flex-col items-center rounded-2xl bg-white/20 px-4 py-1.5 backdrop-blur">
+    <div className="flex min-w-20 flex-col items-center rounded-2xl bg-white/30 px-4 py-1.5">
       <span className="text-[0.65rem] font-bold uppercase tracking-widest opacity-80">
         {label}
       </span>

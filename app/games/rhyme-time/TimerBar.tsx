@@ -34,30 +34,38 @@ export default function TimerBar({
     if (!bar) return;
 
     if (paused) {
-      // Freeze the bar at its current visual width.
-      const frozen = window.getComputedStyle(bar).width;
+      // Freeze at the current visual scale: read the live transform matrix
+      // first, then kill the transition so the freeze write doesn't animate.
+      const transform = window.getComputedStyle(bar).transform;
       bar.style.transition = "none";
-      bar.style.width = frozen;
+      bar.style.transform =
+        transform === "none"
+          ? "scaleX(1)"
+          : `scaleX(${new DOMMatrix(transform).a})`;
       return;
     }
 
-    // Restart from full with no transition, force a reflow, then shrink.
+    // Restart from full with no transition, force a reflow, then shrink via a
+    // GPU-composited transform (no per-frame layout/paint).
     bar.style.transition = "none";
-    bar.style.width = "100%";
+    bar.style.transform = "scaleX(1)";
     void bar.offsetWidth;
-    bar.style.transition = `width ${durationMs}ms linear`;
-    bar.style.width = "0%";
+    bar.style.transition = `transform ${durationMs}ms linear`;
+    bar.style.transform = "scaleX(0)";
 
     const id = window.setTimeout(() => onTimeoutRef.current(), durationMs);
     return () => window.clearTimeout(id);
   }, [roundId, durationMs, paused]);
 
   return (
-    <div className="h-3 w-full overflow-hidden rounded-full bg-black/20" aria-hidden>
+    <div
+      className="h-3 w-full overflow-hidden rounded-full bg-black/20 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+      aria-hidden
+    >
       <div
         ref={barRef}
-        className="h-full rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]"
-        style={{ width: "100%" }}
+        className="h-full rounded-full bg-white"
+        style={{ width: "100%", transformOrigin: "left" }}
       />
     </div>
   );

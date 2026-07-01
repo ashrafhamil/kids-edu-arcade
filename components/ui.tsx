@@ -16,7 +16,7 @@ export function BigButton({
   const styles =
     variant === "solid"
       ? "bg-white text-slate-900 shadow-lg shadow-black/20 hover:brightness-105"
-      : "bg-white/20 text-white backdrop-blur hover:bg-white/30";
+      : "bg-white/30 text-white hover:bg-white/30";
   return (
     <button className={`${base} ${styles} ${className}`} {...rest}>
       {children}

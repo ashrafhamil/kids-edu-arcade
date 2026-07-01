@@ -356,7 +356,7 @@ function BinButton({
       type="button"
       onClick={onTap}
       disabled={disabled}
-      className={`flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-2xl bg-black/15 ring-4 backdrop-blur transition-all duration-150 disabled:active:scale-100 ${feedback}`}
+      className={`flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-2xl bg-black/30 ring-4 transition-all duration-150 disabled:active:scale-100 ${feedback}`}
       aria-label={`${bin.label} bin`}
     >
       <span className="text-4xl leading-none drop-shadow" aria-hidden>

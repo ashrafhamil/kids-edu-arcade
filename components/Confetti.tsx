@@ -28,12 +28,17 @@ const COLORS = [
  * new truthy value (pass an incrementing counter). Pure CSS animation, cleans
  * itself up, and is pointer-events-none so it never blocks taps.
  */
-export default function Confetti({ fire, count = 80 }: { fire: number; count?: number }) {
+export default function Confetti({ fire, count = 48 }: { fire: number; count?: number }) {
   const [pieces, setPieces] = useState<Piece[]>([]);
 
   useEffect(() => {
     if (!fire) return;
-    const batch: Piece[] = Array.from({ length: count }, (_, i) => ({
+    // Scale the burst to the device: treat the caller's `count` as an upper
+    // bound, then cap hard on low-end phones to keep live compositor layers sane.
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowEnd = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4;
+    const n = Math.min(count, lowEnd ? 28 : 48);
+    const batch: Piece[] = Array.from({ length: n }, (_, i) => ({
       id: fire * 1000 + i,
       left: Math.random() * 100,
       delay: Math.random() * 0.25,

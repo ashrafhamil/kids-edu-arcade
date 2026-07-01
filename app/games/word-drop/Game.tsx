@@ -507,7 +507,7 @@ export default function Game() {
 
   return (
     <GameShell meta={meta} right={liveStats}>
-      <Confetti fire={burst} count={70} />
+      <Confetti fire={burst} count={28} />
 
       <div className="flex w-full flex-col items-center gap-3 no-select">
         {phase === "playing" && (

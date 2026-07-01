@@ -329,7 +329,7 @@ function BrushBar({ selected }: { selected: string }) {
   const isEraser = selected === ERASER;
   const swatch = PALETTE.find((p) => p.hex === selected);
   return (
-    <div className="flex items-center gap-2 rounded-full bg-white/25 px-4 py-1.5 shadow-md backdrop-blur">
+    <div className="flex items-center gap-2 rounded-full bg-white/25 px-4 py-1.5 shadow-md">
       <span className="text-lg leading-none" aria-hidden>
         {isEraser ? "🧽" : "🖌️"}
       </span>
@@ -423,7 +423,7 @@ function ControlButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex-1 select-none rounded-2xl bg-white/20 px-4 py-2.5 text-lg font-black tracking-tight text-white backdrop-blur transition active:scale-95 hover:bg-white/30 disabled:opacity-50 disabled:active:scale-100"
+      className="flex-1 select-none rounded-2xl bg-white/30 px-4 py-2.5 text-lg font-black tracking-tight text-white transition active:scale-95 hover:bg-white/30 disabled:opacity-50 disabled:active:scale-100"
     >
       {label}
     </button>
@@ -458,7 +458,7 @@ function Gallery({
             aria-label={`${pic.name}${done ? " (finished)" : locked ? " (locked)" : ""}`}
             aria-current={current ? "true" : undefined}
             className={`relative flex h-11 w-11 items-center justify-center rounded-2xl text-2xl transition active:scale-90 ${
-              locked ? "bg-white/10 opacity-60" : "bg-white/25 backdrop-blur"
+              locked ? "bg-white/10 opacity-60" : "bg-white/25"
             } ${current ? "ring-4 ring-white" : "ring-2 ring-white/30"}`}
           >
             <span aria-hidden>{locked ? "🔒" : pic.emoji}</span>

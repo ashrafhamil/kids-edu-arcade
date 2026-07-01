@@ -67,22 +67,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigation — network-first, fall back to cached page then home
+  // Navigation — cache-first for instant launch, revalidate in background.
+  // The installed PWA opens from cache immediately (no network round-trip on
+  // launch); a fresh copy is fetched in the background for the next launch.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() =>
-          caches
-            .match(request)
-            .then((cached) => cached || caches.match("/"))
-        )
+      caches.match(request).then((cached) => {
+        const network = fetch(request)
+          .then((response) => {
+            if (response.ok) {
+              const clone = response.clone();
+              caches.open(CACHE).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          })
+          .catch(() => cached || caches.match("/"));
+        return cached || network;
+      })
     );
     return;
   }
