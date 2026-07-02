@@ -14,6 +14,8 @@ export type Round = {
   tiles: Tile[];
   /** The same letters sorted A→Z — the sequence the player must tap. */
   order: string[];
+  /** How long the timer bar lasts for the WHOLE sequence (not per letter), in ms. */
+  durationMs: number;
 };
 
 const STAR_THRESHOLDS = [80, 200, 400] as const;
@@ -26,6 +28,16 @@ export function starsFor(score: number): number {
 /** Three letters to start, four once the player has cleared a few rounds. */
 export function lettersFor(roundsCompleted: number): number {
   return roundsCompleted >= 5 ? 4 : 3;
+}
+
+/**
+ * Timer bar length for the WHOLE tap-in-order sequence, not a single tap — a wrong tap
+ * doesn't reset progress, so this only needs to cover reading + tapping every letter once.
+ * Per-letter time tightens as the player warms up, floor keeps it solvable.
+ */
+export function durationFor(roundsCompleted: number): number {
+  const perLetter = Math.max(2800, 4200 - roundsCompleted * 120);
+  return perLetter * lettersFor(roundsCompleted);
 }
 
 function shuffle<T>(items: readonly T[]): T[] {
@@ -69,5 +81,5 @@ export function genRound(id: number, roundsCompleted: number, avoidOrder?: reado
   }
 
   const tiles: Tile[] = display.map((letter, i) => ({ key: `${id}-${i}-${letter}`, letter }));
-  return { id, tiles, order };
+  return { id, tiles, order, durationMs: durationFor(roundsCompleted) };
 }

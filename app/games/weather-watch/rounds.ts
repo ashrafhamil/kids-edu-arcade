@@ -40,6 +40,8 @@ export type Round = {
   answer: string;
   /** Shuffled tap options; always contains the answer plus distinct distractors. */
   choices: WeatherType[];
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 const STAR_THRESHOLDS = [80, 200, 400] as const;
@@ -52,6 +54,11 @@ export function starsFor(score: number): number {
 /** Three choices to start, four once the player is warmed up. */
 export function choiceCountFor(score: number): number {
   return score >= 150 ? 4 : 3;
+}
+
+/** Timer bar length, tightening slightly once the fourth choice tile appears. */
+export function durationFor(score: number): number {
+  return choiceCountFor(score) >= 4 ? 5000 : 6000;
 }
 
 /** Score at/above which distractors start favoring visually-close weather types. */
@@ -97,5 +104,5 @@ export function genRound(id: number, score: number, avoidName?: string): Round {
   }
 
   const choices = shuffle([answer, ...distractors]);
-  return { id, cue, answer: answer.name, choices };
+  return { id, cue, answer: answer.name, choices, durationMs: durationFor(score) };
 }

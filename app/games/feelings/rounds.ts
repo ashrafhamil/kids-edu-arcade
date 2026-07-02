@@ -39,6 +39,8 @@ export type Round = {
   correct: Emotion;
   /** The correct word plus distractors, shuffled. */
   choices: Emotion[];
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 const STAR_THRESHOLDS = [80, 200, 400] as const;
@@ -51,6 +53,11 @@ export function starsFor(score: number): number {
 /** Three choices to start, four once the player is warmed up. */
 export function choiceCountFor(score: number): number {
   return score >= 150 ? 4 : 3;
+}
+
+/** Timer bar length, tightening slightly once the fourth choice tile appears. */
+export function durationFor(score: number): number {
+  return choiceCountFor(score) >= 4 ? 5000 : 6000;
 }
 
 function pick<T>(items: readonly T[]): T {
@@ -81,5 +88,5 @@ export function genRound(id: number, score: number, avoidName?: string): Round {
   const distractors = distractorPool.slice(0, count - 1);
 
   const choices = shuffle([correct, ...distractors]);
-  return { id, correct, choices };
+  return { id, correct, choices, durationMs: durationFor(score) };
 }

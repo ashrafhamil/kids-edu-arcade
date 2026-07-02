@@ -17,6 +17,7 @@ import {
   type Token,
   type FamilyId,
 } from "./patterns";
+import TimerBar from "./TimerBar";
 
 const SLUG = "pattern-party";
 const START_HEARTS = 3;
@@ -173,6 +174,14 @@ export default function Game() {
     schedule(() => loadNext(nextCorrect), CORRECT_DELAY);
   }
 
+  function handleTimeout(): void {
+    if (phase !== "playing" || !puzzle || resolving.current) return;
+    resolving.current = true;
+    setRoundState("resolving");
+    setLastCorrect(false);
+    registerMiss();
+  }
+
   const heartsDisplay =
     "❤️".repeat(Math.max(0, hearts)) +
     "🤍".repeat(Math.max(0, START_HEARTS - hearts));
@@ -215,6 +224,15 @@ export default function Game() {
 
           <div className="text-center text-3xl font-black drop-shadow sm:text-4xl">
             What comes next? 🤔
+          </div>
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={puzzle.id}
+              durationMs={puzzle.durationMs}
+              paused={roundState !== "active"}
+              onTimeout={handleTimeout}
+            />
           </div>
 
           <div className="relative flex w-full max-w-sm justify-center">

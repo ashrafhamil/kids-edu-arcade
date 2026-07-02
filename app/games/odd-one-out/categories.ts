@@ -35,6 +35,8 @@ export type Round = {
   majorityId: string;
   /** Screen-reader hint, e.g. "5 fruits and 1 vehicle". */
   label: string;
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 /** Star thresholds for the final score. */
@@ -48,6 +50,11 @@ export function starsFor(score: number): number {
 /** Tiles on the board — 4 early, 6 once the child is warmed up. */
 export function tilesFor(correctCount: number): number {
   return correctCount < 5 ? 4 : 6;
+}
+
+/** Timer bar length for a board of this many tiles — a touch tighter once 6 are on screen. */
+export function durationFor(tileCount: number): number {
+  return tileCount <= 4 ? 7000 : 6500;
 }
 
 function pick<T>(items: T[]): T {
@@ -87,5 +94,6 @@ export function genRound(count: number, id: number, avoidMajorityId?: string): R
     tiles,
     majorityId: majority.id,
     label: `${count - 1} ${majority.name} and 1 ${odd.name}`,
+    durationMs: durationFor(count),
   };
 }

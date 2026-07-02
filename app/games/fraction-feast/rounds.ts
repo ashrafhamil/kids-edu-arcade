@@ -37,6 +37,8 @@ export type Round = {
   answer: FractionValue;
   /** The answer plus distractors, shuffled. Every value is distinct. */
   choices: FractionValue[];
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 const STAR_THRESHOLDS = [80, 200, 400] as const;
@@ -49,6 +51,12 @@ export function starsFor(score: number): number {
 /** Three choices to start, four once the player is warmed up. */
 export function choiceCountFor(correctCount: number): number {
   return correctCount >= 4 ? 4 : 3;
+}
+
+/** Timer bar length — generous, since counting pizza slices takes longer than a
+ * simple word match. Tightens slightly once the fourth choice appears. */
+export function durationFor(correctCount: number): number {
+  return choiceCountFor(correctCount) >= 4 ? 7000 : 8000;
 }
 
 /** Fifths only unlock after a few correct rounds, keeping the earliest pizzas simple. */
@@ -88,5 +96,5 @@ export function genRound(id: number, correctCount: number, avoid?: FractionValue
   const distractors = distractorPool.slice(0, count - 1);
 
   const choices = shuffle([answer, ...distractors]);
-  return { id, answer, choices };
+  return { id, answer, choices, durationMs: durationFor(correctCount) };
 }

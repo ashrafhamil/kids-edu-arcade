@@ -8,6 +8,7 @@ import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import { genRound, starsFor, tilesFor, type Round, type Tile } from "./categories";
+import TimerBar from "./TimerBar";
 
 const SLUG = "odd-one-out";
 const START_HEARTS = 3;
@@ -179,6 +180,14 @@ export default function Game() {
     else registerMiss();
   }
 
+  function handleTimeout(): void {
+    if (phase !== "playing" || resolvingRef.current || !round) return;
+    resolvingRef.current = true;
+    setRoundState("resolving");
+    setChosenKey(null);
+    registerMiss();
+  }
+
   function tileVisual(tile: Tile): TileVisual {
     if (!reveal) return "idle";
     if (tile.isOdd) return "correct";
@@ -229,6 +238,15 @@ export default function Game() {
 
           <div className="text-center text-2xl font-black drop-shadow sm:text-3xl">
             Which one doesn&apos;t belong? 🔍
+          </div>
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={round.id}
+              durationMs={round.durationMs}
+              paused={roundState !== "active"}
+              onTimeout={handleTimeout}
+            />
           </div>
 
           <div className="relative w-full">

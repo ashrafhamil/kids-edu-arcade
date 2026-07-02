@@ -32,6 +32,8 @@ export type Round = {
   answer: string;
   /** Shuffled tap options; always contains the answer plus distinct distractors. */
   choices: string[];
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 /** Star thresholds for the game-over screen. */
@@ -45,6 +47,12 @@ export function starsFor(score: number): number {
 /** Choices grow from 3 to 4 as the score climbs, ramping the difficulty. */
 export function choiceCountFor(score: number): number {
   return score >= 120 ? 4 : 3;
+}
+
+/** Timer bar length — reading a silhouette takes a beat, so this starts a little
+ * longer than a plain word match, then tightens once the fourth choice appears. */
+export function durationFor(score: number): number {
+  return choiceCountFor(score) >= 4 ? 6000 : 7000;
 }
 
 /** Fisher–Yates shuffle on a copy — never mutates the input. */
@@ -67,5 +75,5 @@ export function genRound(id: number, score: number, avoidAnswer?: string): Round
   const answer = answerPool[Math.floor(Math.random() * answerPool.length)];
   const distractors = shuffle(EMOJIS.filter((e) => e !== answer)).slice(0, count - 1);
   const choices = shuffle([answer, ...distractors]);
-  return { id, answer, choices };
+  return { id, answer, choices, durationMs: durationFor(score) };
 }

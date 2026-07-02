@@ -37,6 +37,8 @@ export type Puzzle = {
   answer: Token;
   /** Shuffled choices: the answer plus tempting distractors, all distinct. */
   choices: Token[];
+  /** How long this puzzle's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 type Built = { prompt: Token[]; answer: Token; distractors: [Token, Token] };
@@ -212,6 +214,12 @@ export function levelFor(correctCount: number): number {
   return Math.min(Math.floor(correctCount / 3), 3);
 }
 
+/** Timer tightens each stage: 9s at the start (reading a sequence takes longer than a
+ * simple tap), never below 6s. */
+export function durationFor(stage: number): number {
+  return Math.max(6000, 9000 - stage * 1000);
+}
+
 /** Stars from the final score, matching the on-screen thresholds. */
 export function starsFor(score: number): number {
   if (score >= 300) return 3;
@@ -256,5 +264,6 @@ export function genPuzzle(stage: number, id: number, avoid?: FamilyId): Puzzle {
     prompt: built.prompt,
     answer: built.answer,
     choices: assembleChoices(built),
+    durationMs: durationFor(stage),
   };
 }

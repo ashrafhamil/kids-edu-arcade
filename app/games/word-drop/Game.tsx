@@ -7,6 +7,7 @@ import Confetti from "@/components/Confetti";
 import { sfx } from "@/lib/sound";
 import { recordBest, getBest, setStars as persistStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
+import TimerBar from "./TimerBar";
 
 const SLUG = "word-drop";
 const meta = getGame(SLUG);
@@ -119,6 +120,16 @@ function lanePct(lane: number): number {
   return 10 + lane * (80 / (LANES - 1));
 }
 
+/**
+ * Timer bar length for the WHOLE word, not a single tap — letters keep falling and
+ * recycling regardless, so this only needs to cover reading + tapping every letter once.
+ * Per-letter time tightens as the level climbs, floor keeps it solvable.
+ */
+function wordTimerDurationFor(level: number, wordLength: number): number {
+  const perLetter = Math.max(3200, 5000 - (level - 1) * 300);
+  return perLetter * wordLength;
+}
+
 function starsFor(score: number): number {
   if (score >= 400) return 3;
   if (score >= 200) return 2;
@@ -150,6 +161,9 @@ export default function Game() {
   const [shakeId, setShakeId] = useState(0); // re-keys the slot row to restart the shake
   const [wrongTileId, setWrongTileId] = useState<number | null>(null);
   const [levelToast, setLevelToast] = useState("");
+  // Bumped on every new word AND on a timeout (to restart the bar while staying on the
+  // same word, mirroring how a wrong tap never resets progress either).
+  const [timerRound, setTimerRound] = useState(0);
 
   const level = 1 + Math.floor(wordsCompleted / 2);
 
@@ -341,6 +355,7 @@ export default function Game() {
       setFilled(0);
       setLocked(false);
       setTiles(modelRef.current.slice());
+      setTimerRound((n) => n + 1);
     },
     [spawnAll]
   );
@@ -367,6 +382,7 @@ export default function Game() {
     setFilled(0);
     setLocked(false);
     setTiles(modelRef.current.slice());
+    setTimerRound((n) => n + 1);
     setPhase("playing");
   }, [spawnAll]);
 
@@ -470,6 +486,22 @@ export default function Game() {
     }
   };
 
+  // Time's up before the word was finished: same penalty as a wrong tap (heart lost,
+  // combo reset, shake) but progress is kept — the word doesn't reset, only the bar does.
+  const handleTimeout = () => {
+    if (phase !== "playing" || locked) return;
+    sfx.wrong();
+    setCombo(0);
+    setShakeId((n) => n + 1);
+    const newHearts = hearts - 1;
+    setHearts(newHearts);
+    if (newHearts <= 0) {
+      endGame();
+    } else {
+      setTimerRound((n) => n + 1);
+    }
+  };
+
   // Stable ref-setter per tile id (ids are a fixed 0..TILE_COUNT-1 set), so an
   // unrelated re-render never detaches/reattaches every tile's ref. The closure
   // reads yRef live, so the initial transform is still correct on (re)mount.
@@ -511,7 +543,17 @@ export default function Game() {
 
       <div className="flex w-full flex-col items-center gap-3 no-select">
         {phase === "playing" && (
-          <WordCard entry={entry} filled={filled} shakeId={shakeId} accent={meta.accent} />
+          <>
+            <WordCard entry={entry} filled={filled} shakeId={shakeId} accent={meta.accent} />
+            <div className="w-full max-w-xs px-2">
+              <TimerBar
+                questionId={timerRound}
+                durationMs={wordTimerDurationFor(level, entry.word.length)}
+                paused={locked}
+                onTimeout={handleTimeout}
+              />
+            </div>
+          </>
         )}
 
         <div

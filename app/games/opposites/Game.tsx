@@ -8,6 +8,7 @@ import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import { genRound, starsFor, ALL_WORDS, type Round, type OppWord } from "./pairs";
+import TimerBar from "./TimerBar";
 
 const SLUG = "opposites";
 const START_HEARTS = 3;
@@ -48,6 +49,9 @@ export default function Game() {
   const timers = useRef<number[]>([]);
   // Prompts already shown this run — a prompt won't repeat until all have been seen.
   const usedPrompts = useRef<string[]>([]);
+  // Synchronous lock so a round resolves exactly once, even against a timer deadline
+  // firing in the same tick a tap was already processed.
+  const resolving = useRef(false);
 
   // Build the next round, drawing the prompt from the not-yet-seen pool and starting a
   // fresh cycle once every word has been a prompt.
@@ -91,6 +95,7 @@ export default function Game() {
     setRevealAnswer(false);
     setFloatGain(0);
     setRoundState("active");
+    resolving.current = false;
   }
 
   function startGame(): void {
@@ -107,6 +112,7 @@ export default function Game() {
     usedPrompts.current = [];
     setRound(makeRound(0));
     setRoundState("active");
+    resolving.current = false;
     setPhase("playing");
   }
 
@@ -125,7 +131,8 @@ export default function Game() {
   }
 
   function handleChoice(choice: OppWord): void {
-    if (phase !== "playing" || roundState !== "active" || !round) return;
+    if (phase !== "playing" || roundState !== "active" || !round || resolving.current) return;
+    resolving.current = true;
     setRoundState("resolving");
 
     // Wrong tap: reveal the true opposite, shake the tapped tile, and lose a heart. Values
@@ -168,6 +175,31 @@ export default function Game() {
 
     const avoid = round.prompt.word;
     schedule(() => loadNext(nextCorrect, avoid), CORRECT_DELAY);
+  }
+
+  // Time's up: same penalty as a wrong tap (reveal the opposite, lose a heart), but with
+  // no tapped tile to mark wrong.
+  function handleTimeout(): void {
+    if (phase !== "playing" || roundState !== "active" || !round || resolving.current) return;
+    resolving.current = true;
+    setRoundState("resolving");
+
+    sfx.wrong();
+    setWrongWord(null);
+    setRevealAnswer(true);
+    setCombo(0);
+
+    const remaining = hearts - 1;
+    setHearts(remaining);
+
+    const finalScore = score;
+    const keepCorrect = correctCount;
+    const avoid = round.prompt.word;
+    if (remaining <= 0) {
+      schedule(() => endGame(finalScore), OVER_DELAY);
+    } else {
+      schedule(() => loadNext(keepCorrect, avoid), MISS_DELAY);
+    }
   }
 
   function choiceVisual(choice: OppWord): ChoiceVisual {
@@ -226,6 +258,15 @@ export default function Game() {
           </div>
 
           <div className="text-2xl font-black drop-shadow">Which is the opposite?</div>
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={round.id}
+              durationMs={round.durationMs}
+              paused={roundState !== "active"}
+              onTimeout={handleTimeout}
+            />
+          </div>
 
           <div className="flex w-full max-w-xs flex-wrap items-stretch justify-center gap-3">
             {round.choices.map((choice, index) => (

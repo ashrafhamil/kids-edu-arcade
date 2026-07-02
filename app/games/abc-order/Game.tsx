@@ -8,6 +8,7 @@ import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import { genRound, starsFor, lettersFor, type Round, type Tile } from "./rounds";
+import TimerBar from "./TimerBar";
 
 const SLUG = "abc-order";
 const START_HEARTS = 3;
@@ -45,6 +46,9 @@ export default function Game() {
 
   const nextId = useRef(1);
   const timers = useRef<number[]>([]);
+  // Synchronous lock mirroring `locked`, so a timeout deadline firing in the same tick
+  // a tap already locked the round can never double-resolve.
+  const resolving = useRef(false);
 
   useEffect(() => {
     const id = window.setTimeout(() => setBest(getBest(SLUG)), 0);
@@ -77,6 +81,7 @@ export default function Game() {
     setTappedKeys(new Set());
     setWrongKey(null);
     setLocked(false);
+    resolving.current = false;
   }
 
   function loadNext(forRoundsCompleted: number, avoidOrder: string[]): void {
@@ -109,12 +114,13 @@ export default function Game() {
     }
   }
 
-  function registerWrongTap(tile: Tile, currentScore: number): void {
+  function registerWrongTap(tile: Tile | null, currentScore: number): void {
     sfx.wrong();
     setCombo(0);
-    setWrongKey(tile.key);
+    setWrongKey(tile?.key ?? null);
     setShakeKey((k) => k + 1);
     setLocked(true);
+    resolving.current = true;
 
     const remaining = hearts - 1;
     setHearts(remaining);
@@ -124,6 +130,7 @@ export default function Game() {
       schedule(() => {
         setLocked(false);
         setWrongKey(null);
+        resolving.current = false;
       }, WRONG_DELAY);
     }
   }
@@ -148,6 +155,7 @@ export default function Game() {
     if (lettersFor(nextRoundsCompleted) > lettersFor(roundsCompleted)) sfx.levelUp();
     setRoundsCompleted(nextRoundsCompleted);
     setLocked(true);
+    resolving.current = true;
     schedule(() => loadNext(nextRoundsCompleted, activeRound.order), ROUND_DELAY);
   }
 
@@ -159,6 +167,14 @@ export default function Game() {
     } else {
       registerWrongTap(tile, score);
     }
+  }
+
+  // Time's up before the sequence was finished: same penalty as a wrong tap (heart lost,
+  // brief lock) but progress and the already-tapped letters are kept — matching how a
+  // wrong tap never resets the sequence either.
+  function handleTimeout(): void {
+    if (phase !== "playing" || !round || locked || resolving.current) return;
+    registerWrongTap(null, score);
   }
 
   const heartsDisplay =
@@ -203,6 +219,15 @@ export default function Game() {
           </div>
 
           <OrderSlots order={round.order} progress={progress} />
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={round.id}
+              durationMs={round.durationMs}
+              paused={locked}
+              onTimeout={handleTimeout}
+            />
+          </div>
 
           <div key={shakeKey} className={shakeKey > 0 ? "animate-shake" : ""}>
             <div

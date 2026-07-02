@@ -8,6 +8,7 @@ import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import { genRound, starsFor, choiceCountFor, type Round } from "./rounds";
+import TimerBar from "./TimerBar";
 
 const SLUG = "weather-watch";
 const START_HEARTS = 3;
@@ -107,7 +108,7 @@ export default function Game() {
     }
   }
 
-  function registerMiss(currentScore: number, choiceName: string, prevAnswer: string): void {
+  function registerMiss(currentScore: number, choiceName: string | null, prevAnswer: string): void {
     sfx.wrong();
     setCombo(0);
     setWrongName(choiceName);
@@ -144,6 +145,12 @@ export default function Game() {
     setFloatGain(points);
     setFloatKey((k) => k + 1);
     schedule(() => loadNext(nextScore, round.answer), CORRECT_DELAY);
+  }
+
+  function handleTimeout(): void {
+    if (phase !== "playing" || !round || resolving.current) return;
+    resolving.current = true;
+    registerMiss(score, null, round.answer);
   }
 
   function choiceVisual(name: string): ChoiceVisual {
@@ -199,6 +206,15 @@ export default function Game() {
           </div>
 
           <div className="text-2xl font-black drop-shadow">What&apos;s the weather?</div>
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={round.id}
+              durationMs={round.durationMs}
+              paused={revealAnswer}
+              onTimeout={handleTimeout}
+            />
+          </div>
 
           <div className="relative flex w-full max-w-sm flex-wrap items-stretch justify-center gap-3">
             {round.choices.map((choice, index) => (

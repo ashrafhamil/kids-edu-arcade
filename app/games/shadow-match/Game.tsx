@@ -8,6 +8,7 @@ import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import { genRound, choiceCountFor, starsFor, type Round } from "./rounds";
+import TimerBar from "./TimerBar";
 
 const SLUG = "shadow-match";
 const START_HEARTS = 3;
@@ -159,6 +160,14 @@ export default function Game() {
     schedule(() => loadNext(nextScore, round.answer), CORRECT_DELAY);
   }
 
+  function handleTimeout(): void {
+    if (phase !== "playing" || !round || resolving.current) return;
+    resolving.current = true;
+    setRoundState("resolving");
+    setLastCorrect(false);
+    registerMiss(score, round.answer);
+  }
+
   const heartsDisplay =
     "❤️".repeat(Math.max(0, hearts)) +
     "🤍".repeat(Math.max(0, START_HEARTS - hearts));
@@ -202,6 +211,15 @@ export default function Game() {
 
           <div className="text-center text-2xl font-black drop-shadow sm:text-3xl">
             Whose shadow is this? 🔦
+          </div>
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={round.id}
+              durationMs={round.durationMs}
+              paused={roundState !== "active"}
+              onTimeout={handleTimeout}
+            />
           </div>
 
           <div className="relative flex justify-center">

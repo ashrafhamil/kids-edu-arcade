@@ -16,6 +16,8 @@ export type Round = {
   target: Target;
   /** The correct value (matches `left` or `right`). */
   answer: number;
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 type Band = {
@@ -48,6 +50,11 @@ function bandFor(level: number): Band {
   }
 }
 
+/** Timer tightens each band: ~6.5s at the start, never below 4s (two-digit reads take time). */
+export function durationFor(level: number): number {
+  return Math.max(4000, 6500 - level * 600);
+}
+
 /** Stars from final score, matching the on-screen thresholds. */
 export function starsFor(score: number): number {
   if (score >= 400) return 3;
@@ -78,5 +85,6 @@ export function genRound(level: number, id: number): Round {
     right: hiOnLeft ? lo : hi,
     target,
     answer,
+    durationMs: durationFor(level),
   };
 }

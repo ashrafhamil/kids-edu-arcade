@@ -8,6 +8,7 @@ import { sfx } from "@/lib/sound";
 import { getBest, recordBest, setStars } from "@/lib/storage";
 import { getGame } from "@/app/games/registry";
 import { genRound, levelFor, starsFor, type Round, type Target } from "./rounds";
+import TimerBar from "./TimerBar";
 
 const SLUG = "big-number";
 const START_HEARTS = 3;
@@ -122,7 +123,7 @@ export default function Game() {
     }
   }
 
-  function registerMiss(wrongVal: number): void {
+  function registerMiss(wrongVal: number | null): void {
     sfx.wrong();
     setCombo(0);
     setWrongValue(wrongVal);
@@ -167,6 +168,13 @@ export default function Game() {
     } else {
       registerMiss(value);
     }
+  }
+
+  function handleTimeout(): void {
+    if (phase !== "playing" || !round || resolving.current) return;
+    resolving.current = true;
+    setRoundState("resolving");
+    registerMiss(null);
   }
 
   function cardClass(value: number): string {
@@ -223,6 +231,15 @@ export default function Game() {
           </div>
 
           <TargetPrompt target={round.target} />
+
+          <div className="w-full max-w-xs px-2">
+            <TimerBar
+              questionId={round.id}
+              durationMs={round.durationMs}
+              paused={roundState !== "active"}
+              onTimeout={handleTimeout}
+            />
+          </div>
 
           <div className="grid w-full max-w-md grid-cols-2 gap-4">
             <NumberCard

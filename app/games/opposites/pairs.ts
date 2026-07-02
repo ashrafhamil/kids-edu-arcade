@@ -66,6 +66,8 @@ export type Round = {
   correct: OppWord;
   /** The correct word plus distractors from other pairs, shuffled. */
   choices: OppWord[];
+  /** How long this round's timer bar lasts, in ms. */
+  durationMs: number;
 };
 
 // --- Difficulty + scoring --------------------------------------------------
@@ -80,6 +82,11 @@ export function starsFor(score: number): number {
 /** Three choices to start, four once the player is warmed up. */
 export function choiceCountFor(correctCount: number): number {
   return correctCount >= 4 ? 4 : 3;
+}
+
+/** Timer bar length, tightening slightly once the fourth choice tile appears. */
+export function durationFor(correctCount: number): number {
+  return choiceCountFor(correctCount) >= 4 ? 5000 : 6000;
 }
 
 function pick<T>(items: T[]): T {
@@ -129,5 +136,6 @@ export function genRound(
     prompt,
     correct,
     choices: shuffle([correct, ...distractors]),
+    durationMs: durationFor(correctCount),
   };
 }
