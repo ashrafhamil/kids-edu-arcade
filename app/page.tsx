@@ -41,8 +41,6 @@ export default function Home() {
     [band, category]
   );
 
-  const filtered = band !== ALL || category !== ALL;
-
   return (
     <div className="min-h-dvh w-full bg-gradient-to-b from-violet-500 via-purple-600 to-indigo-700 text-white">
       <div className="mx-auto w-full max-w-2xl px-5 py-8">
@@ -58,54 +56,45 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Sticky so the filters stay reachable while scrolling 52 cards. The
-            blurred bar is a sibling of the grid, never an ancestor — a
-            backdrop-filter ancestor would trap any fixed child inside it. */}
-        <div className="sticky top-0 z-10 -mx-5 mb-4 bg-purple-700/70 px-5 py-3 backdrop-blur-md">
-          <ChipRow label="Age">
-            <Chip active={band === ALL} onSelect={() => setBand(ALL)}>
-              All ages
-            </Chip>
+        {/* Picture-only filters. The audience starts at three, so a word on a
+            control is a word that does not get read — the emoji is the label,
+            and the text lives in aria-label for screen readers. */}
+        <div className="mb-6 flex flex-col items-center gap-3">
+          <FilterRow label="Age">
+            <Bubble active={band === ALL} title="All ages" onSelect={() => setBand(ALL)}>
+              🌈
+            </Bubble>
             {AGE_BANDS.map((b) => (
-              <Chip key={b.id} active={band === b.id} onSelect={() => setBand(b.id)}>
-                <span aria-hidden>{b.emoji}</span> {b.label}
-              </Chip>
+              <Bubble
+                key={b.id}
+                active={band === b.id}
+                title={`Ages ${b.label}`}
+                onSelect={() => setBand(b.id)}
+              >
+                {b.emoji}
+              </Bubble>
             ))}
-          </ChipRow>
+          </FilterRow>
 
-          <ChipRow label="Category">
-            <Chip active={category === ALL} onSelect={() => setCategory(ALL)}>
-              All games
-            </Chip>
+          <FilterRow label="Category">
+            <Bubble
+              active={category === ALL}
+              title="All games"
+              onSelect={() => setCategory(ALL)}
+            >
+              🎮
+            </Bubble>
             {CATEGORIES.map((c) => (
-              <Chip
+              <Bubble
                 key={c.id}
                 active={category === c.id}
+                title={c.label}
                 onSelect={() => setCategory(c.id)}
               >
-                <span aria-hidden>{c.emoji}</span> {c.label}
-              </Chip>
+                {c.emoji}
+              </Bubble>
             ))}
-          </ChipRow>
-
-          <div className="mt-2 flex items-center justify-between text-xs font-bold text-white/70">
-            <span aria-live="polite">
-              {shown.length} {shown.length === 1 ? "game" : "games"}
-            </span>
-            {filtered && (
-              <button
-                type="button"
-                onClick={() => {
-                  sfx.click();
-                  setBand(ALL);
-                  setCategory(ALL);
-                }}
-                className="rounded-full bg-white/20 px-3 py-1 font-bold transition active:scale-95 hover:bg-white/30"
-              >
-                Show all ✕
-              </button>
-            )}
-          </div>
+          </FilterRow>
         </div>
 
         <main className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -159,24 +148,25 @@ export default function Home() {
   );
 }
 
-function ChipRow({ label, children }: { label: string; children: React.ReactNode }) {
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  // Six 48px bubbles plus gaps come to 328px, so the widest row fits one line
+  // on a 360px phone. It wraps rather than scrolls, because a control that
+  // scrolls out of sight is a control a small child never finds.
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
+    <div role="group" aria-label={label} className="flex flex-wrap justify-center gap-2">
       {children}
     </div>
   );
 }
 
-function Chip({
+function Bubble({
   active,
+  title,
   onSelect,
   children,
 }: {
   active: boolean;
+  title: string;
   onSelect: () => void;
   children: React.ReactNode;
 }) {
@@ -184,17 +174,19 @@ function Chip({
     <button
       type="button"
       aria-pressed={active}
+      aria-label={title}
+      title={title}
       onClick={() => {
         sfx.click();
         onSelect();
       }}
-      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-black transition active:scale-95 ${
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl leading-none transition ${
         active
-          ? "bg-white text-purple-800 shadow-md"
-          : "bg-white/20 text-white hover:bg-white/30"
+          ? "scale-110 bg-white shadow-lg ring-4 ring-white/50"
+          : "bg-white/20 hover:bg-white/30 active:scale-95"
       }`}
     >
-      {children}
+      <span aria-hidden>{children}</span>
     </button>
   );
 }
