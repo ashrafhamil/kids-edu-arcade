@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { GAMES } from "./games/registry";
+import { CATEGORIES, GAMES } from "./games/registry";
 import { getBest, getStars } from "@/lib/storage";
 import { sfx, initMute } from "@/lib/sound";
 
@@ -72,10 +72,8 @@ export default function Home() {
 
         <footer className="mt-8 text-center text-sm font-semibold text-white/70">
           <p>
-            {GAMES.length} games · Math · Coding · Memory · Spelling · Focus · Money · Shapes ·
-            Time · Typing · Colors · Arabic · Art · Music · Counting · Geography · Multiply ·
-            Patterns · Science · Phonics · Mazes · Compare · Logic · Words · Reflex · Visual ·
-            Weather · Anatomy · Alphabet · Fractions · Emotions
+            {GAMES.length} games ·{" "}
+            {CATEGORIES.map((c) => `${c.emoji} ${c.label}`).join(" · ")}
           </p>
           <p className="mt-1 text-xs text-white/50">
             No sign-up · No tracking · Works offline after first load

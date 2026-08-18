@@ -1,4 +1,4 @@
-const CACHE = "kids-arcade-v1";
+const CACHE = "kids-arcade-v2";
 
 const NAV_ROUTES = [
   "/",
@@ -32,6 +32,28 @@ const NAV_ROUTES = [
   "/games/abc-order",
   "/games/fraction-feast",
   "/games/feelings",
+  "/games/number-line-hop",
+  "/games/first-sound",
+  "/games/letter-hunt",
+  "/games/baby-animals",
+  "/games/sticker-scene",
+  "/games/number-bonds",
+  "/games/skip-count",
+  "/games/add-ladder",
+  "/games/plant-parts",
+  "/games/jobs-tools",
+  "/games/symmetry-paint",
+  "/games/beat-builder",
+  "/games/spell-it",
+  "/games/sentence-build",
+  "/games/synonyms",
+  "/games/code-loops",
+  "/games/mini-sudoku",
+  "/games/logic-grid",
+  "/games/map-quest",
+  "/games/pixel-copy",
+  "/games/melody-match",
+  "/games/color-theory",
 ];
 
 self.addEventListener("install", (event) => {
