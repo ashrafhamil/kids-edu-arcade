@@ -1,15 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { CATEGORIES, GAMES } from "./games/registry";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AGE_BANDS,
+  CATEGORIES,
+  GAMES,
+  type AgeBandId,
+  type CategoryId,
+} from "./games/registry";
 import { getBest, getStars } from "@/lib/storage";
 import { sfx, initMute } from "@/lib/sound";
+
+/** "all" is the unset state for either filter axis, not a real band/category. */
+const ALL = "all" as const;
+type BandFilter = AgeBandId | typeof ALL;
+type CategoryFilter = CategoryId | typeof ALL;
 
 export default function Home() {
   // Best scores / stars come from localStorage, so read them after mount to
   // avoid a server/client hydration mismatch.
   const [stats, setStats] = useState<Record<string, { best: number; stars: number }>>({});
+  const [band, setBand] = useState<BandFilter>(ALL);
+  const [category, setCategory] = useState<CategoryFilter>(ALL);
 
   useEffect(() => {
     initMute();
@@ -18,10 +31,22 @@ export default function Home() {
     setStats(next);
   }, []);
 
+  const shown = useMemo(
+    () =>
+      GAMES.filter(
+        (g) =>
+          (band === ALL || g.ageBand === band) &&
+          (category === ALL || g.category === category)
+      ),
+    [band, category]
+  );
+
+  const filtered = band !== ALL || category !== ALL;
+
   return (
     <div className="min-h-dvh w-full bg-gradient-to-b from-violet-500 via-purple-600 to-indigo-700 text-white">
       <div className="mx-auto w-full max-w-2xl px-5 py-8">
-        <header className="mb-7 text-center">
+        <header className="mb-5 text-center">
           <div className="mb-2 text-6xl animate-bob" aria-hidden>
             🎮
           </div>
@@ -33,8 +58,58 @@ export default function Home() {
           </p>
         </header>
 
+        {/* Sticky so the filters stay reachable while scrolling 52 cards. The
+            blurred bar is a sibling of the grid, never an ancestor — a
+            backdrop-filter ancestor would trap any fixed child inside it. */}
+        <div className="sticky top-0 z-10 -mx-5 mb-4 bg-purple-700/70 px-5 py-3 backdrop-blur-md">
+          <ChipRow label="Age">
+            <Chip active={band === ALL} onSelect={() => setBand(ALL)}>
+              All ages
+            </Chip>
+            {AGE_BANDS.map((b) => (
+              <Chip key={b.id} active={band === b.id} onSelect={() => setBand(b.id)}>
+                <span aria-hidden>{b.emoji}</span> {b.label}
+              </Chip>
+            ))}
+          </ChipRow>
+
+          <ChipRow label="Category">
+            <Chip active={category === ALL} onSelect={() => setCategory(ALL)}>
+              All games
+            </Chip>
+            {CATEGORIES.map((c) => (
+              <Chip
+                key={c.id}
+                active={category === c.id}
+                onSelect={() => setCategory(c.id)}
+              >
+                <span aria-hidden>{c.emoji}</span> {c.label}
+              </Chip>
+            ))}
+          </ChipRow>
+
+          <div className="mt-2 flex items-center justify-between text-xs font-bold text-white/70">
+            <span aria-live="polite">
+              {shown.length} {shown.length === 1 ? "game" : "games"}
+            </span>
+            {filtered && (
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.click();
+                  setBand(ALL);
+                  setCategory(ALL);
+                }}
+                className="rounded-full bg-white/20 px-3 py-1 font-bold transition active:scale-95 hover:bg-white/30"
+              >
+                Show all ✕
+              </button>
+            )}
+          </div>
+        </div>
+
         <main className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {GAMES.map((g) => {
+          {shown.map((g) => {
             const s = stats[g.slug];
             return (
               <Link
@@ -81,5 +156,45 @@ export default function Home() {
         </footer>
       </div>
     </div>
+  );
+}
+
+function ChipRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {children}
+    </div>
+  );
+}
+
+function Chip({
+  active,
+  onSelect,
+  children,
+}: {
+  active: boolean;
+  onSelect: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={() => {
+        sfx.click();
+        onSelect();
+      }}
+      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-black transition active:scale-95 ${
+        active
+          ? "bg-white text-purple-800 shadow-md"
+          : "bg-white/20 text-white hover:bg-white/30"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
